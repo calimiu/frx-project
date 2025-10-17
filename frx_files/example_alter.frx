@@ -1,0 +1,23 @@
+{
+  "basic": {
+    "name": "Example Alter",
+    "gender": ["nonbinary"],
+    "color": "#7B68EE"
+  },
+  "meta": {
+    "id": "example-001",
+    "created": "2025-10-17",
+    "version": "1.0",
+    "status": {
+      "isactive": true,
+      "lastfront": "2025-10-17T02:35:00Z"
+    }
+  },
+  "system": {
+    "relationships": {
+      "Alice": {
+        "relationship": "friend"
+      }
+    }
+  }
+}
