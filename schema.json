@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FRX Alter File Schema",
+  "description": "Schema for alter files used in the FRX Project.",
+  "type": "object",
+  "required": ["basic", "meta"],
+  "properties": {
+    "basic": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string" },
+        "nameextra": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "prn": {
+          "type": "object",
+          "properties": {
+            "prnshort": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "prnfull": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 5,
+                "maxItems": 5
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "gender": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "species": {
+          "type": "object",
+          "properties": {
+            "hybrid": { "type": "boolean" },
+            "speciesterm": { "type": "string" },
+            "specieslist": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          },
+          "additionalProperties": false
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([A-Fa-f0-9]{6})$"
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "setting": {
+      "type": "object",
+      "properties": {
+        "subsystem": { "type": "integer" },
+        "isfrntallowed": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+
+    "system": {
+      "type": "object",
+      "properties": {
+        "relationships": {
+          "type": "object",
+          "patternProperties": {
+            ".*": {
+              "type": "object",
+              "properties": {
+                "ID": { "type": "string" },
+                "relationship": { "type": "string" }
+              },
+              "required": ["relationship"],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "meta": {
+      "type": "object",
+      "required": ["id", "created", "version"],
+      "properties": {
+        "id": { "type": "string" },
+        "created": { "type": "string", "format": "date" },
+        "lastupdate": { "type": "string", "format": "date" },
+        "version": { "type": "string" },
+        "status": {
+          "type": "object",
+          "properties": {
+            "isactive": { "type": "boolean" },
+            "lastfront": { "type": "string", "format": "date-time" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "custom": {
+      "type": ["object", "null"],
+      "description": "Optional user-defined data; can contain any fields.",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "appearance": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": [],
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
