@@ -15,15 +15,24 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "FRX Loader"
+args = "FRX Editor"
 
 [[workflows.workflow]]
-name = "FRX Loader"
+name = "FRX Editor"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python FRX_Loader.py"
+args = "python app.py"
+waitForPort = 5000
 
 [workflows.workflow.metadata]
-outputType = "console"
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 34103
+externalPort = 3000

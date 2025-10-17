@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRX File Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        .file-list {
+            list-style: none;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #f5f5f5;
+        }
+        
+        .file-name {
+            font-size: 18px;
+            color: #333;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-edit {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-edit:hover {
+            background: #45a049;
+        }
+        
+        .btn-delete {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-delete:hover {
+            background: #da190b;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔹 FRX File Editor</h1>
+        
+        <div class="card">
+            <div class="controls">
+                <input type="text" id="newFileName" placeholder="Enter new file name (e.g., alter.frx)">
+                <button onclick="createNewFile()">Create New File</button>
+            </div>
+            
+            <ul class="file-list" id="fileList">
+                {% if files %}
+                    {% for file in files %}
+                    <li class="file-item">
+                        <span class="file-name" onclick="editFile('{{ file }}')">{{ file }}</span>
+                        <div class="file-actions">
+                            <button class="btn-edit" onclick="editFile('{{ file }}')">Edit</button>
+                            <button class="btn-delete" onclick="deleteFile('{{ file }}')">Delete</button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No FRX files found. Create your first file above!</p>
+                    </div>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        function editFile(filename) {
+            window.location.href = `/editor/${filename}`;
+        }
+        
+        function createNewFile() {
+            const filename = document.getElementById('newFileName').value.trim();
+            if (!filename) {
+                alert('Please enter a file name');
+                return;
+            }
+            
+            if (!filename.endsWith('.frx') && !filename.endsWith('.json')) {
+                alert('File name must end with .frx or .json');
+                return;
+            }
+            
+            window.location.href = `/editor/${filename}`;
+        }
+        
+        async function deleteFile(filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/file/${filename}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to delete file');
+                }
+            } catch (error) {
+                alert('Error deleting file: ' + error.message);
+            }
+        }
+        
+        document.getElementById('newFileName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                createNewFile();
+            }
+        });
+    </script>
+</body>
+</html>

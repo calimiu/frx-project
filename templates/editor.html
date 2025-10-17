@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRX Editor - {{ filename or 'New File' }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: white;
+            font-size: 2em;
+        }
+        
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 500px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        .btn-validate {
+            background: #4CAF50;
+        }
+        
+        .btn-validate:hover {
+            background: #45a049;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .preview {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .preview pre {
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+        }
+        
+        .template-btn {
+            background: #9c27b0;
+            margin-top: 10px;
+        }
+        
+        .template-btn:hover {
+            background: #7b1fa2;
+        }
+        
+        @media (max-width: 968px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📝 {{ filename or 'New File' }}</h1>
+            <a href="/" class="btn-back">← Back to Files</a>
+        </div>
+        
+        <div class="editor-container">
+            <div class="card">
+                <h2>Editor</h2>
+                <textarea id="editor" placeholder="Enter your FRX JSON data here..."></textarea>
+                <div class="controls">
+                    <button onclick="saveFile()">💾 Save File</button>
+                    <button class="btn-validate" onclick="validateFile()">✓ Validate</button>
+                    <button class="template-btn" onclick="loadTemplate()">📋 Load Template</button>
+                </div>
+                <div id="status" class="status"></div>
+            </div>
+            
+            <div class="card">
+                <h2>Preview</h2>
+                <div class="preview">
+                    <pre id="preview">Load or enter JSON data to see preview</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const filename = "{{ filename }}";
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const status = document.getElementById('status');
+        
+        async function loadFile() {
+            if (!filename) {
+                loadTemplate();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/file/${filename}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    editor.value = JSON.stringify(data, null, 2);
+                    updatePreview();
+                } else if (response.status === 404) {
+                    loadTemplate();
+                }
+            } catch (error) {
+                console.error('Error loading file:', error);
+                loadTemplate();
+            }
+        }
+        
+        function loadTemplate() {
+            const template = {
+                "basic": {
+                    "name": "New Alter",
+                    "gender": [],
+                    "color": "#000000"
+                },
+                "meta": {
+                    "id": "alter-" + Date.now(),
+                    "created": new Date().toISOString().split('T')[0],
+                    "version": "1.0",
+                    "status": {
+                        "isactive": false
+                    }
+                }
+            };
+            
+            editor.value = JSON.stringify(template, null, 2);
+            updatePreview();
+        }
+        
+        async function saveFile() {
+            if (!filename) {
+                showStatus('Please specify a filename', 'error');
+                return;
+            }
+            
+            try {
+                const data = JSON.parse(editor.value);
+                
+                const response = await fetch(`/api/file/${filename}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✓ File saved successfully!', 'success');
+                } else {
+                    showStatus('✗ ' + (result.error || 'Failed to save file'), 'error');
+                }
+            } catch (error) {
+                showStatus('✗ Invalid JSON: ' + error.message, 'error');
+            }
+        }
+        
+        async function validateFile() {
+            try {
+                const data = JSON.parse(editor.value);
+                
+                const response = await fetch('/api/validate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showStatus('✓ Valid FRX file!', 'success');
+                } else {
+                    showStatus('✗ Validation error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('✗ Invalid JSON: ' + error.message, 'error');
+            }
+        }
+        
+        function updatePreview() {
+            try {
+                const data = JSON.parse(editor.value);
+                preview.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                preview.textContent = 'Invalid JSON: ' + error.message;
+            }
+        }
+        
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = 'status ' + type;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 5000);
+        }
+        
+        editor.addEventListener('input', updatePreview);
+        
+        loadFile();
+    </script>
+</body>
+</html>
